@@ -1,0 +1,17 @@
+server:
+  port: 8089
+
+database:
+  host: localhost
+  port: 3306
+  username: root
+  password: "root123456"
+  dbname: heima
+
+logging:
+  level: debug
+  dateformat: "2006-01-02 15:04:05"
+
+es:
+  token: "cHhzZU1Kc0JTVFoxNDd4UFY2NTE6S3NTbFB5LUtUMWVOLVN0UjdyT041dw=="
+  address: "https://localhost:9200"
