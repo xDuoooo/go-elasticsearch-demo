@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/itcast/hotel-demo/internal/model"
-	"github.com/itcast/hotel-demo/internal/repository"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/model"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/repository"
 )
 
 // HotelService 酒店服务接口

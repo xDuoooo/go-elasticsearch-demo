@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/itcast/hotel-demo/internal/model"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/model"
 	"gorm.io/gorm"
 )
 

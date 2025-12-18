@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-	"github.com/itcast/hotel-demo/internal/global"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/global"
 	"log"
 )
 

@@ -3,16 +3,17 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/itcast/hotel-demo/internal/global"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/global"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/model"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/repository"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/service"
 	"log"
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
-	"github.com/itcast/hotel-demo/internal/model"
-	"github.com/itcast/hotel-demo/internal/repository"
-	"github.com/itcast/hotel-demo/internal/service"
 	"github.com/spf13/viper"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -124,6 +125,7 @@ func initEs() {
 
 // initServices 初始化服务
 func initServices() {
+
 	hotelRepo := repository.NewHotelRepository(global.Db)
 	global.HotelService = service.NewHotelService(hotelRepo)
 }

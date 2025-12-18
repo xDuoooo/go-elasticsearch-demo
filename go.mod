@@ -1,4 +1,4 @@
-module github.com/itcast/hotel-demo
+module github.com/xDuoooo/go-elasticsearch-demo
 
 go 1.24.3
 
