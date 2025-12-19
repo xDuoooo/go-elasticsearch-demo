@@ -3,23 +3,22 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/xDuoooo/go-elasticsearch-demo/internal/global"
-	"github.com/xDuoooo/go-elasticsearch-demo/internal/model"
-	"github.com/xDuoooo/go-elasticsearch-demo/internal/repository"
-	"github.com/xDuoooo/go-elasticsearch-demo/internal/service"
 	"log"
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-)
 
-var ()
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/controller"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/dao"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/global"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/model"
+	"github.com/xDuoooo/go-elasticsearch-demo/internal/service"
+)
 
 func main() {
 	// 加载配置
@@ -28,12 +27,14 @@ func main() {
 	// 初始化数据库
 	initDatabase()
 
-	// 初始化服务
+	// 初始化 Elasticsearch
+	initElasticsearch()
+
+	// 初始化 DAO 层
+	initDAO()
+
+	// 初始化 Service 层
 	initServices()
-
-	// 初始化ES
-	initEs()
-
 	// 初始化路由
 	router := initRouter()
 
@@ -89,7 +90,7 @@ func initDatabase() {
 		username, password, host, port, dbname)
 
 	var err error
-	global.Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+	global.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 
@@ -99,14 +100,15 @@ func initDatabase() {
 
 	log.Println("数据库连接成功")
 
-	// 自动迁移（可选）
-	// db.AutoMigrate(&model.Hotel{})
 }
-func initEs() {
+
+// initElasticsearch 初始化 Elasticsearch 客户端
+func initElasticsearch() {
 	token := viper.GetString("es.token")
 	if token == "" {
 		log.Fatal("ES token 未配置，请检查配置文件")
 	}
+
 	typedClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
 		APIKey:    token,
 		Addresses: []string{viper.GetString("es.address")},
@@ -117,17 +119,24 @@ func initEs() {
 		},
 	})
 	if err != nil {
-		log.Fatalf("连接ES失败: %v", err)
+		log.Fatalf("连接 Elasticsearch 失败: %v", err)
 	}
-	global.EsClient = typedClient
 
+	global.EsClient = typedClient
+	log.Println("Elasticsearch 连接成功")
 }
 
-// initServices 初始化服务
-func initServices() {
+// initDAO 初始化 DAO 层
+func initDAO() {
+	global.MysqlDAO = dao.NewMysqlDAO(global.DB)
+	global.EsDAO = dao.NewEsDAO(global.EsClient)
+	log.Println("DAO 层初始化成功")
+}
 
-	hotelRepo := repository.NewHotelRepository(global.Db)
-	global.HotelService = service.NewHotelService(hotelRepo)
+// initServices 初始化 Service 层
+func initServices() {
+	global.HotelService = service.NewHotelService(global.MysqlDAO, global.EsDAO)
+	log.Println("Service 层初始化成功")
 }
 
 // initRouter 初始化路由
@@ -142,7 +151,7 @@ func initRouter() *gin.Engine {
 	// API 路由组
 	api := router.Group("/api")
 	{
-		hotels := api.Group("/hotels")
+		hotels := api.Group("/hotel")
 		{
 			hotels.GET("", listHotels)
 			hotels.GET("/:id", getHotel)
@@ -151,6 +160,7 @@ func initRouter() *gin.Engine {
 			hotels.DELETE("/:id", deleteHotel)
 			hotels.GET("/city/:city", getHotelsByCity)
 			hotels.GET("/brand/:brand", getHotelsByBrand)
+			hotels.POST("/list", controller.List)
 		}
 	}
 
